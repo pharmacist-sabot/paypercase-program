@@ -1,13 +1,14 @@
 {
   "name": "paypercase-tauri",
   "private": true,
-  "version": "0.1.0",
+  "version": "5.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "export-defaults": "python3 scripts/export_defaults.py"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
