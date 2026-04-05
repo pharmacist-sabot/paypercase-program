@@ -79,50 +79,32 @@
             >PayPerCase
         </span>
 
-        <!-- Menu: ไฟล์ -->
-        <div
-            class="menu-bar__item"
-            :class="{ active: openMenu === 'file' }"
-            @click="toggleMenu('file')"
-        >
-            ไฟล์
-            <div v-if="openMenu === 'file'" class="dropdown-menu">
-                <div
-                    class="dropdown-menu__item"
-                    @click.stop="closeAndEmit('exit')"
-                >
-                    🚪 ออกจากโปรแกรม
-                    <span class="dropdown-menu__shortcut">Ctrl+Q</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Menu: การเชื่อมต่อ -->
         <div
             class="menu-bar__item"
             :class="{ active: openMenu === 'conn' }"
             @click="toggleMenu('conn')"
         >
-            🔌 การเชื่อมต่อ
+            การเชื่อมต่อ
             <div v-if="openMenu === 'conn'" class="dropdown-menu">
                 <div
                     class="dropdown-menu__item"
                     @click.stop="closeAndEmit('open-connection')"
                 >
-                    🔌 ตั้งค่าการเชื่อมต่อ HOSxP
+                    ตั้งค่าการเชื่อมต่อ HOSxP
                 </div>
                 <div class="dropdown-menu__separator" />
                 <div
                     class="dropdown-menu__item"
                     @click.stop="closeAndEmit('reconnect')"
                 >
-                    🔄 เชื่อมต่อใหม่
+                    เชื่อมต่อใหม่
                 </div>
                 <div
                     class="dropdown-menu__item"
                     @click.stop="closeAndEmit('disconnect')"
                 >
-                    ⛔ ตัดการเชื่อมต่อ
+                    ตัดการเชื่อมต่อ
                 </div>
             </div>
         </div>
@@ -133,13 +115,13 @@
             :class="{ active: openMenu === 'settings' }"
             @click="toggleMenu('settings')"
         >
-            ⚙️ การตั้งค่า
+            การตั้งค่า
             <div v-if="openMenu === 'settings'" class="dropdown-menu">
                 <div
                     class="dropdown-menu__item"
                     @click.stop="closeAndEmit('open-settings')"
                 >
-                    ⚙️ ตั้งค่าระบบ
+                    ตั้งค่าระบบ
                 </div>
             </div>
         </div>
@@ -150,21 +132,47 @@
             :class="{ active: openMenu === 'about' }"
             @click="toggleMenu('about')"
         >
-            ℹ️ เกี่ยวกับ
+            เกี่ยวกับ
             <div v-if="openMenu === 'about'" class="dropdown-menu">
                 <div
                     class="dropdown-menu__item"
                     @click.stop="closeAndEmit('show-safety')"
                 >
-                    🛡️ นโยบายความปลอดภัย HOSxP
+                    นโยบายความปลอดภัย HOSxP
+                </div>
+                <div class="dropdown-menu__item" @click.stop="openDisclaimer">
+                    ข้อจำกัดความรับผิดชอบ
                 </div>
                 <div class="dropdown-menu__separator" />
                 <div class="dropdown-menu__item" @click.stop="closeMenu">
-                    <span>PayPerCase v5.0.0</span>
+                    <span>PayPerCase</span>
                 </div>
             </div>
         </div>
     </nav>
+
+    <!-- Disclaimer Modal -->
+    <div
+        v-if="showDisclaimer"
+        class="modal-backdrop"
+        @click.self="closeDisclaimer"
+    >
+        <div
+            class="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="ข้อจำกัดความรับผิดชอบ"
+        >
+            <header class="modal__header">ข้อจำกัดความรับผิดชอบ</header>
+            <div class="modal__body">
+                ผู้พัฒนาไม่รับผิดชอบต่อความเสียหายหรือการสูญเสียใด ๆ
+                ที่อาจเกิดขึ้นจากการใช้งานซอฟต์แวร์นี้
+            </div>
+            <footer class="modal__footer">
+                <button class="btn" @click="closeDisclaimer">ปิด</button>
+            </footer>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -180,6 +188,7 @@ const emit = defineEmits<{
 }>();
 
 const openMenu = ref<string | null>(null);
+const showDisclaimer = ref(false);
 
 function toggleMenu(name: string) {
     openMenu.value = openMenu.value === name ? null : name;
@@ -192,6 +201,15 @@ function closeMenu() {
 function closeAndEmit(event: string) {
     closeMenu();
     emit(event as any);
+}
+
+function openDisclaimer() {
+    closeMenu();
+    showDisclaimer.value = true;
+}
+
+function closeDisclaimer() {
+    showDisclaimer.value = false;
 }
 
 function onClickOutside(e: MouseEvent) {
@@ -218,5 +236,44 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
     font-size: 10px;
     color: var(--text-gray);
     padding-left: 16px;
+}
+
+/* Disclaimer modal */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: var(--bg-surface, #fff);
+    padding: 16px;
+    border-radius: 8px;
+    width: 420px;
+    max-width: calc(100% - 40px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+.modal__header {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.modal__body {
+    font-size: 14px;
+    color: var(--text, #333);
+    margin-bottom: 12px;
+}
+.modal__footer {
+    text-align: right;
+}
+.btn {
+    background: var(--primary, #3f51b5);
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
 }
 </style>

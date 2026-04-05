@@ -1,4 +1,4 @@
-// lib.rs — PayPerCase v5.0.0 Tauri Application Setup
+// lib.rs — PayPerCase Tauri Application Setup
 // ไม่มีการแก้ไขข้อมูลใน HOSxP เป็นอันขาด
 
 mod commands;
@@ -6,8 +6,8 @@ mod db;
 mod models;
 mod state;
 
-use state::AppState;
 use db::local;
+use state::AppState;
 
 fn get_db_path() -> std::path::PathBuf {
     if let Some(data_dir) = dirs::data_dir() {
@@ -23,8 +23,7 @@ fn get_db_path() -> std::path::PathBuf {
 pub fn run() {
     // เปิด SQLite database
     let db_path = get_db_path();
-    let conn = rusqlite::Connection::open(&db_path)
-        .expect("ไม่สามารถเปิดฐานข้อมูลท้องถิ่น paypercase.db");
+    let conn = rusqlite::Connection::open(&db_path).expect("ไม่สามารถเปิดฐานข้อมูลท้องถิ่น paypercase.db");
 
     // สร้างตารางและค่า default
     local::init_config_db(&conn).expect("ไม่สามารถเริ่มต้นฐานข้อมูลท้องถิ่น");
