@@ -47,11 +47,13 @@ chore: update default config for new procedures
 1. Update `default_config.json` if needed: `npm run export-defaults`
 2. Bump version in `package.json` and `src-tauri/Cargo.toml`
 3. Commit, tag, and push:
+
    ```bash
    git commit -m "chore: release vX.Y.Z"
    git tag vX.Y.Z
    git push origin main --tags
    ```
+
 4. CI will automatically build and publish the Windows installer to GitHub Releases.
 
 ## Security
