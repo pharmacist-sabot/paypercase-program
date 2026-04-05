@@ -1,0 +1,76 @@
+name: "Release Windows Installer"
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Build & Release Windows Installer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: Install Rust (with Windows target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Restore Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Basic checks for Tauri config and icons
+        # Use node to validate src-tauri/tauri.conf.json has bundle active and an .ico entry,
+        # and that the referenced icon file exists. This step will fail the workflow early
+        # if something is clearly misconfigured for Windows.
+        run: |
+          node -e "const fs=require('fs'); const p='src-tauri/tauri.conf.json'; if(!fs.existsSync(p)){console.error('Missing',p); process.exit(1);} const j=JSON.parse(fs.readFileSync(p,'utf8')); if(!j.bundle || j.bundle.active!==true){console.error('bundle.active is not true in',p); process.exit(1);} const icons = j.bundle.icon || []; const ico = icons.find(i=>String(i).toLowerCase().endsWith('.ico')); if(!ico){console.warn('No .ico entry found in bundle.icon (recommended for Windows).');} const candidate = ico ? ('src-tauri/' + ico) : 'src-tauri/icons/icon.ico'; if(!fs.existsSync(candidate)){ console.warn('Expected icon not found at',candidate); console.warn('Looked for icon referenced in tauri.conf.json or src-tauri/icons/icon.ico.'); } console.log('tauri.conf.json checks done.');"
+        shell: bash
+
+      - name: Ensure build script runs (frontend build)
+        run: npm run build
+
+      - name: Basic Cargo check for Windows target
+        # This runs a fast check on the Windows target to help catch obvious build issues early.
+        run: cargo check --target x86_64-pc-windows-msvc
+        working-directory: src-tauri
+        env:
+          CARGO_TERM_COLOR: always
+
+      - name: Install WiX Toolset (for MSI bundling)
+        run: choco install wixtoolset -y
+
+      - name: Build Tauri Windows installer (release)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Inputs used by the action to create a GitHub Release with generated assets.
+          tagName: ${{ github.ref_name }}
+          releaseName: "PayPerCase ${{ github.ref_name }}"
+          releaseBody: "ดาวน์โหลดไฟล์ตัวติดตั้ง .msi และ .exe สำหรับ Windows ได้ที่ Assets ด้านล่าง"
+          releaseDraft: false
+          prerelease: false
+
+      - name: List built artifacts
+        # Show artifacts produced by the build so they're visible in the workflow logs.
+        run: dir -Recurse target | sed -n '1,200p'
+        shell: bash
