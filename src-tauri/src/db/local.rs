@@ -92,17 +92,104 @@ pub fn init_config_db(conn: &Connection) -> SqliteResult<()> {
         [],
     );
 
-    // ใส่ค่า default ของ payout_options ถ้ายังว่างอยู่
-    let count: i64 = conn.query_row("SELECT COUNT(*) FROM payout_options", [], |row| row.get(0))?;
-    if count == 0 {
-        conn.execute(
-            "INSERT INTO payout_options (amount, label) VALUES (?1, ?2)",
-            params![125.0f64, "ค่าตอบแทน 125 บาท"],
-        )?;
-        conn.execute(
-            "INSERT INTO payout_options (amount, label) VALUES (?1, ?2)",
-            params![20.0f64, "ค่าตอบแทน 20 บาท"],
-        )?;
+    // อ่านไฟล์ default_config.json ที่ถูกฝังไว้ตอน Compile (ใช้ include_str! เพื่อให้ข้อมูลติดไปกับแอป .exe ไม่ต้องพึ่งไฟล์ภายนอก)
+    let default_config_str = include_str!("../../default_config.json");
+    if let Ok(config) = serde_json::from_str::<serde_json::Value>(default_config_str) {
+        
+        let count: i64 = conn.query_row("SELECT COUNT(*) FROM payout_options", [], |row| row.get(0))?;
+        if count == 0 {
+            if let Some(arr) = config.get("payout_options").and_then(|v| v.as_array()) {
+                for item in arr {
+                    if let (Some(amount), Some(label)) = (item.get("amount").and_then(|v| v.as_f64()), item.get("label").and_then(|v| v.as_str())) {
+                        let _ = conn.execute(
+                            "INSERT INTO payout_options (amount, label) VALUES (?1, ?2)",
+                            params![amount, label],
+                        );
+                    }
+                }
+            }
+        }
+
+        let pt_count: i64 = conn.query_row("SELECT COUNT(*) FROM configured_pttypes", [], |row| row.get(0))?;
+        if pt_count == 0 {
+            if let Some(arr) = config.get("pttypes").and_then(|v| v.as_array()) {
+                for item in arr {
+                    if let (Some(pt), Some(nm), Some(pc), Some(hip), Some(sh)) = (
+                        item.get("pttype").and_then(|v| v.as_str()),
+                        item.get("name").and_then(|v| v.as_str()),
+                        item.get("pcode").and_then(|v| v.as_str()),
+                        item.get("hipdata_code").and_then(|v| v.as_str()),
+                        item.get("short_name").and_then(|v| v.as_str()),
+                    ) {
+                        let _ = conn.execute(
+                            "INSERT INTO configured_pttypes (pttype, name, pcode, hipdata_code, short_name) VALUES (?1, ?2, ?3, ?4, ?5)",
+                            params![pt, nm, pc, hip, sh],
+                        );
+                    }
+                }
+            }
+        }
+
+        let pr_count: i64 = conn.query_row("SELECT COUNT(*) FROM configured_procedures", [], |row| row.get(0))?;
+        if pr_count == 0 {
+            if let Some(arr) = config.get("procedures").and_then(|v| v.as_array()) {
+                for item in arr {
+                    if let (Some(ic), Some(nm), Some(sh)) = (
+                        item.get("icode").and_then(|v| v.as_str()),
+                        item.get("name").and_then(|v| v.as_str()),
+                        item.get("short_name").and_then(|v| v.as_str()),
+                    ) {
+                        let _ = conn.execute(
+                            "INSERT INTO configured_procedures (icode, name, short_name) VALUES (?1, ?2, ?3)",
+                            params![ic, nm, sh],
+                        );
+                    }
+                }
+            }
+        }
+
+        let dr_count: i64 = conn.query_row("SELECT COUNT(*) FROM configured_drugs", [], |row| row.get(0))?;
+        if dr_count == 0 {
+            if let Some(arr) = config.get("drugs").and_then(|v| v.as_array()) {
+                for item in arr {
+                    if let (Some(ic), Some(nm), Some(sh)) = (
+                        item.get("icode").and_then(|v| v.as_str()),
+                        item.get("name").and_then(|v| v.as_str()),
+                        item.get("short_name").and_then(|v| v.as_str()),
+                    ) {
+                        let _ = conn.execute(
+                            "INSERT INTO configured_drugs (icode, name, short_name) VALUES (?1, ?2, ?3)",
+                            params![ic, nm, sh],
+                        );
+                    }
+                }
+            }
+        }
+
+        let pv_count: i64 = conn.query_row("SELECT COUNT(*) FROM configured_providers", [], |row| row.get(0))?;
+        if pv_count == 0 {
+            if let Some(arr) = config.get("providers").and_then(|v| v.as_array()) {
+                for item in arr {
+                    if let (Some(pid), Some(nm), Some(sh)) = (
+                        item.get("health_med_provider_id").and_then(|v| v.as_i64()),
+                        item.get("full_name").and_then(|v| v.as_str()),
+                        item.get("short_name").and_then(|v| v.as_str()),
+                    ) {
+                        let _ = conn.execute(
+                            "INSERT INTO configured_providers (health_med_provider_id, full_name, short_name) VALUES (?1, ?2, ?3)",
+                            params![pid, nm, sh],
+                        );
+                    }
+                }
+            }
+        }
+    } else {
+        // Fallback ถ้า parse json ไม่ผ่าน (ซึ่งไม่ควรเกิดขึ้น)
+        let count: i64 = conn.query_row("SELECT COUNT(*) FROM payout_options", [], |row| row.get(0))?;
+        if count == 0 {
+            conn.execute("INSERT INTO payout_options (amount, label) VALUES (?1, ?2)", params![125.0f64, "ค่าตอบแทน 125 บาท"])?;
+            conn.execute("INSERT INTO payout_options (amount, label) VALUES (?1, ?2)", params![20.0f64, "ค่าตอบแทน 20 บาท"])?;
+        }
     }
 
     // ต้องมีอย่างน้อย 1 แถวใน hosxp_connection

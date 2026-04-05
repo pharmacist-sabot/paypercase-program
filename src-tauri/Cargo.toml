@@ -1,6 +1,6 @@
 [package]
 name = "paypercase-program"
-version = "5.0.1"
+version = "5.0.2"
 description = "PayPerCase — ระบบจัดการค่าตอบแทนพนักงานนวดแผนไทย"
 authors = ["PayPerCase"]
 edition = "2021"
