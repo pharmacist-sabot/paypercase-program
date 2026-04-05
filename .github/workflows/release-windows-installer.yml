@@ -72,5 +72,5 @@ jobs:
 
       - name: List built artifacts
         # Show artifacts produced by the build so they're visible in the workflow logs.
-        run: dir -Recurse target | sed -n '1,200p'
+        run: find src-tauri/target -type f | head -n 200 || true
         shell: bash
