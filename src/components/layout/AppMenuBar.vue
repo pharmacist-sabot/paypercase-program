@@ -178,6 +178,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 
+type MenuEmitEvent =
+    | "open-connection"
+    | "open-settings"
+    | "show-safety"
+    | "reconnect"
+    | "disconnect"
+    | "exit";
+
 const emit = defineEmits<{
     "open-connection": [];
     "open-settings": [];
@@ -198,9 +206,28 @@ function closeMenu() {
     openMenu.value = null;
 }
 
-function closeAndEmit(event: string) {
+function closeAndEmit(event: MenuEmitEvent) {
     closeMenu();
-    emit(event as any);
+    switch (event) {
+        case "open-connection":
+            emit("open-connection");
+            break;
+        case "open-settings":
+            emit("open-settings");
+            break;
+        case "show-safety":
+            emit("show-safety");
+            break;
+        case "reconnect":
+            emit("reconnect");
+            break;
+        case "disconnect":
+            emit("disconnect");
+            break;
+        case "exit":
+            emit("exit");
+            break;
+    }
 }
 
 function openDisclaimer() {
