@@ -11,7 +11,7 @@ Thank you for your interest in contributing! Here's how to get started.
 ## Getting Started
 
 ```bash
-git clone https://github.com/pharmacist-sabot/paypercase-program.git
+git clone https://github.com/suradet-ps/paypercase-program.git
 cd paypercase-program
 npm install
 npm run tauri dev
