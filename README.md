@@ -1,7 +1,7 @@
 # PayPerCase
 
-[![Release](https://img.shields.io/github/v/release/pharmacist-sabot/paypercase-program?style=flat-square)](https://github.com/pharmacist-sabot/paypercase-program/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/pharmacist-sabot/paypercase-program/release-windows-installer.yml?style=flat-square&label=build)](https://github.com/pharmacist-sabot/paypercase-program/actions)
+[![Release](https://img.shields.io/github/v/release/suradet-ps/paypercase-program?style=flat-square)](https://github.com/suradet-ps/paypercase-program/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/suradet-ps/paypercase-program/release-windows-installer.yml?style=flat-square&label=build)](https://github.com/pharmacist-sabot/paypercase-program/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Tauri](https://img.shields.io/badge/built%20with-Tauri%20v2-24C8D8?style=flat-square)](https://tauri.app)
 
@@ -17,7 +17,7 @@
 
 ## Download
 
-Get the latest Windows installer from the [Releases](https://github.com/pharmacist-sabot/paypercase-program/releases) page.
+Get the latest Windows installer from the [Releases](https://github.com/suradet-ps/paypercase-program/releases) page.
 
 ## Tech Stack
 
